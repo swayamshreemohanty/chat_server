@@ -1,0 +1,41 @@
+{
+	"info": {
+		"_postman_id": "2e29810f-5cd4-41cd-b59e-5dd0ff658aae",
+		"name": "ChatBot",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23683986"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "message",
+							"value": "Modem install",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "0.0.0.0:8000/chat",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8000",
+					"path": [
+						"chat"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
