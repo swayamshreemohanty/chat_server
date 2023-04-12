@@ -45,7 +45,11 @@
               alert("Customer details submitted successfully");
               form.reset();
             } else {
-              alert("Error submitting customer details");
+              // alert("Error submitting customer details");
+              response.text().then((errorMessage) => {
+                alert(`Error submitting customer details: ${errorMessage}`);
+                console.error(errorMessage);
+              });
             }
           })
           .catch((error) => {

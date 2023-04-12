@@ -1,5 +1,12 @@
+import os
+import zipfile
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from geopy.geocoders import Nominatim
+import csv
+
+
+geolocator = Nominatim(user_agent="chat-address")
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///customer.db'
@@ -118,6 +125,8 @@ class Customer(db.Model):
     address = db.Column(db.String(120))
     city = db.Column(db.String(50))
     state = db.Column(db.String(50))
+    latitude = db.Column(db.String(50))
+    longitude = db.Column(db.String(50))
     zip = db.Column(db.String(10))
 
 @app.route('/customer-details')
@@ -136,25 +145,75 @@ def generate_id():
     # Return the new ID
     return new_id
 
+
+@app.route('/generate_zip', methods=['GET'])
+def generate_zip():
+    try:
+        #Check for DATA folder exist or not
+        if not os.path.exists('DATA'):
+            return jsonify({'response': "DATA folder not found"}),400
+
+        # Create a ZipFile object
+        with zipfile.ZipFile('data.zip', 'w') as zip_obj:
+            # Iterate over all the files in the data folder and add them to the zip file
+            for foldername,subfolders, filenames in os.walk('DATA'):
+                for filename in filenames:
+                    file_path = os.path.join(foldername, filename)
+                    zip_obj.write(file_path)
+        return jsonify({'response': 'Zip file created successfully!'})
+        
+    except Exception as e:
+        return jsonify({'response': f"Error generating zip file: {e}"}),400
+        
+    
+def generateLocationCSV(customer):
+    try:
+        # Define the column headers
+        fieldnames = ['City', 'Latitude', 'Longitude', 'Is Depot?', 'Earliest Departure', 'Latest Return']
+        
+        # Create Location directory if it does not exist
+        if not os.path.exists('DATA'):
+            os.makedirs('DATA')
+            
+        # Check if the file exists
+        file_exists = os.path.isfile('DATA/location.csv')
+        
+        # Write the data to a CSV file
+        with open('DATA/location.csv', mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            # Write header only if the file is newly created
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow({'City': customer.city, 'Latitude': customer.latitude, 'Longitude': customer.longitude})
+    except Exception as e:
+        raise Exception(f"Error writing person to CSV: {e}")  
+
 @app.route('/submit', methods=['POST'])
 def submit():
-    id=generate_id()
-    name = request.form['name']
-    email = request.form['email']
-    phone = request.form['phone']
-    address = request.form['address']
-    city = request.form['city']
-    state = request.form['state']
-    zip = request.form['zip']
-    
-    customer = Customer(id=id,name=name, email=email, phone=phone, address=address, city=city, state=state, zip=zip)
-    db.create_all()
-    db.session.add(customer)
-    db.session.commit()
-    
-    return 'Customer details submitted successfully'
-
-
+    try:
+        id=generate_id()
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        address = request.form['address']
+        city = request.form['city']
+        state = request.form['state']
+        zip = request.form['zip']
+        location=getLocation(address)
+        
+        customer = Customer(id=id,name=name, email=email, phone=phone, address=address, city=city, state=state, zip=zip,latitude=location.latitude,longitude=location.longitude)
+        db.create_all()
+        db.session.add(customer)
+        db.session.commit()
+        
+        #Generate location csv file
+        generateLocationCSV(customer)
+        
+        return 'Customer details submitted successfully'
+    except Exception as e:
+        print(str(e))
+        return str(e)
+        
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -175,6 +234,12 @@ def get_response(message):
 
     print(random.choice(responses))
     return jsonify({'response': random.choice(responses)})
+
+
+def getLocation(addressKeyword):
+    location = geolocator.geocode(addressKeyword)
+    return location
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=8000, debug=True)
