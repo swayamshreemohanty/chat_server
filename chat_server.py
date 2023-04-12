@@ -166,6 +166,40 @@ def generate_zip():
         return jsonify({'response': f"Error generating zip file: {e}"}),400
         
     
+def generateDummyCSV():
+    try:
+        
+        # Create Location directory if it does not exist
+        if not os.path.exists('DATA'):
+            os.makedirs('DATA')
+            
+        shipment="shipments.csv"
+        optimize="optimize.csv"
+        route="route.csv"
+        vehicles="vehicles.csv"
+        # Check if these files exists
+        shipments_file_exists = os.path.isfile(f'DATA/{shipment}')
+        optimize_file_exists = os.path.isfile(f'DATA/{optimize}')
+        route_matrix_file_exists = os.path.isfile(f'DATA/{route}')
+        vehicles_file_exists = os.path.isfile(f'DATA/{vehicles}')
+        
+        # Write the data to a CSV file
+        if not shipments_file_exists:
+            with open(f'DATA/shipments.csv', mode='w', newline='') as file:
+                csv.writer(file) # create csv writer object
+        if not optimize_file_exists:
+            with open(f'DATA/{optimize}', mode='w', newline='') as file:
+                csv.writer(file) # create csv writer object
+        if not route_matrix_file_exists:
+            with open(f'DATA/{route}', mode='w', newline='') as file:
+                csv.writer(file) # create csv writer object
+        if not vehicles_file_exists:
+            with open(f'DATA/{vehicles}', mode='w', newline='') as file:
+                csv.writer(file) # create csv writer object
+        
+                
+    except Exception as e:
+        raise Exception(f"Error creating files to CSV: {e}")  
 def generateLocationCSV(customer):
     try:
         # Define the column headers
@@ -185,8 +219,9 @@ def generateLocationCSV(customer):
             if not file_exists:
                 writer.writeheader()
             writer.writerow({'City': customer.city, 'Latitude': customer.latitude, 'Longitude': customer.longitude})
+        generateDummyCSV()
     except Exception as e:
-        raise Exception(f"Error writing person to CSV: {e}")  
+        raise Exception(f"Error writing data to CSV: {e}")  
 
 @app.route('/submit', methods=['POST'])
 def submit():
