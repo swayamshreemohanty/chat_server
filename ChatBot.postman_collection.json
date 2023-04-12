@@ -7,19 +7,18 @@
 	},
 	"item": [
 		{
-			"name": "New Request",
+			"name": "chat",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "message",
-							"value": "Modem install",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\r\n    \"message\":\"not solved using AR connect\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "0.0.0.0:8000/chat",
@@ -32,6 +31,35 @@
 					"port": "8000",
 					"path": [
 						"chat"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generate_zip",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "http://0.0.0.0:8000/generate_zip",
+					"protocol": "http",
+					"host": [
+						"0",
+						"0",
+						"0",
+						"0"
+					],
+					"port": "8000",
+					"path": [
+						"generate_zip"
 					]
 				}
 			},
